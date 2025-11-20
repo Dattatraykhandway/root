@@ -1,0 +1,34 @@
+name: Daily Blog AutoPost Bot
+
+on:
+  # This schedules the bot to run at a specific time (10:00 AM UTC).
+  # You can adjust '10' to change the hour. Check your local time conversion.
+  schedule:
+    - cron: '0 10 * * *'
+  # Allows you to manually trigger the workflow from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ⚙️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Install dependencies
+        run: pip install -r requirements.txt
+        
+      - name: 🚀 Run Lazy Email Bot
+        # This 'env' section maps your GitHub Secrets to the variables the Python script expects (os.environ.get)
+        env:
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+          YOUR_GMAIL: ${{ secrets.YOUR_GMAIL }}
+          YOUR_APP_PASSWORD: ${{ secrets.YOUR_APP_PASSWORD }}
+          BLOGGER_EMAIL: ${{ secrets.BLOGGER_EMAIL }}
+        run: python lazy_bot.py
