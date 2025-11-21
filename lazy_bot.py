@@ -6,13 +6,13 @@ import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
-import schedule
+# The 'import schedule' line has been removed here.
 
 # ================= CONFIGURATION (Read from GitHub Secrets) =================
-# These variables are read from the secrets you set in GitHub.
+# CRITICAL FIX: The names below now match your GitHub Secret names:
 GEMINI_KEY = os.environ.get("GEMINI_KEY")
-YOUR_GMAIL = os.environ.get("YOUR_GMAIL")
-YOUR_APP_PASSWORD = os.environ.get("YOUR_APP_PASSWORD")
+EMAIL_ADDRESS = os.environ.get("YOUR_GMAIL")         # Changed from EMAIL_ADDRESS
+EMAIL_PASSWORD = os.environ.get("YOUR_APP_PASSWORD") # Changed from EMAIL_PASSWORD
 BLOGGER_EMAIL = os.environ.get("BLOGGER_EMAIL")
 
 # ============================================================================
@@ -62,24 +62,25 @@ def job():
         
         # 3. EMAIL TO BLOGGER
         msg = MIMEMultipart()
-        msg['From'] = YOUR_GMAIL
+        msg['From'] = EMAIL_ADDRESS
         msg['To'] = BLOGGER_EMAIL
         # This subject line becomes the post title
         msg['Subject'] = f"TREND ALERT: {topic}"
         
         msg.attach(MIMEText(blog_html, 'html'))
 
+        # Use the corrected environment variables for login
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(YOUR_GMAIL, YOUR_APP_PASSWORD)
-        server.sendmail(YOUR_GMAIL, BLOGGER_EMAIL, msg.as_string())
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        server.sendmail(EMAIL_ADDRESS, BLOGGER_EMAIL, msg.as_string())
         server.quit()
         
         print("✅ Blog posted successfully via Email!")
         
     except Exception as e:
+        # If the failure happens here, it will likely be an API or authentication error.
         print(f"Error encountered: {e}")
 
-# The schedule run loop is not needed in GitHub Actions (it uses cron)
-# We only call job() once for the workflow run.
+# Call the job function once. The GitHub Actions cron handles the daily schedule.
 job()
